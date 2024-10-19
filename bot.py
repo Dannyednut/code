@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, ContextTypes, Application, ConversationHandler, MessageHandler,filters
+from telegram.ext import CommandHandler, ContextTypes, Application, ConversationHandler, MessageHandler,filters
 import requests
 from pybit.unified_trading import HTTP
 from telegram import Update
