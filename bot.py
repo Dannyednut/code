@@ -3,6 +3,8 @@ import requests
 from pybit.unified_trading import HTTP
 from telegram import Update
 from datetime import datetime
+from flask import Flask, request 
+from telegram import Update
 
 flag = True
 session = HTTP( 
@@ -68,9 +70,13 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('cancelled.')
         return ConversationHandler.END
 
+
 def main():
     import os
+    global TOKEN
     TOKEN = os.getenv('BOTAPIKEY')
+    WEBHOOK = os.getenv('WEBHOOK')
+    global application
     application = Application.builder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
@@ -91,7 +97,25 @@ def main():
     application.add_handler(currency_handler)
     application.add_handler(start_handler)
 
-    application.run_polling()
+    application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+
+    return app
+
+app = Flask(__name__)
+
+async def webhook(update, context):
+    await application.process_update(update)
+
+@app.route('/' + TOKEN, methods=['POST'])
+def respond():
+    update = Update.de_json(request.get_json(force=True), application.bot)
+    webhook(update, None)
+    return 'OK'
+
+@app.route('/')
+def index():
+    return 'Hello, this is my Telegram bot!'
 
 if __name__ == '__main__':
-    main()
+    app = main()
+    app.run
