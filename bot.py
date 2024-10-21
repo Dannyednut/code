@@ -104,7 +104,7 @@ app = Flask(__name__)
 async def webhook(update, context):
     await application.process_update(update)
 
-@app.route('/' + TOKEN, methods=['POST'])
+@app.route('/' + WEBHOOK + '/' + TOKEN, methods=['POST'])
 def respond():
     update = Update.de_json(request.get_json(force=True), application.bot)
     webhook(update, None)
@@ -115,5 +115,6 @@ def index():
     return 'Hello, this is my Telegram bot!'
 
 if __name__ == '__main__':
-    app = main()
-    app.run()
+    port = int(os.environ.get('PORT', 10000))
+    main()
+    app.run(host='0.0.0.0', port=port)
