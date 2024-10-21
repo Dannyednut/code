@@ -10,7 +10,7 @@ import asyncio
 import os
 TOKEN = os.getenv('BOTAPIKEY')
 WEBHOOK = os.getenv('WEBHOOK')
-application = Application.builder().token(TOKEN).build()
+
 
 flag = True
 session = HTTP( 
@@ -81,7 +81,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 app = Quart(__name__)
 application = Application.builder().token(TOKEN).build()
-
 # ... (keep your existing command handlers and conversation logic)
 
 async def setup_webhook():
@@ -95,12 +94,6 @@ async def setup_webhook():
     except Exception as e:
         print(f"Failed to set webhook: {e}")
 
-@app.route('/' + TOKEN, methods=['POST'])
-async def webhook():
-    update = Update.de_json(await request.get_json(), application.bot)
-    await application.process_update(update)
-    return 'OK'
-
 @app.route('/')
 async def index():
     return 'Hello, this is my Telegram bot!'
@@ -110,6 +103,7 @@ async def health_check():
     return 'OK', 200
 
 def main():
+    application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("get_price", symbol)],
         states={
@@ -129,8 +123,16 @@ def main():
     # Set up the webhook
     asyncio.run(setup_webhook())
 
-    return app
+    return app, application
+
+app, application = main()
+
+@app.route('/' + TOKEN, methods=['POST'])
+async def webhook():
+    update = Update.de_json(await request.get_json(), application.bot)
+    await application.process_update(update)
+    return 'OK'
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    main().run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
