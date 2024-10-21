@@ -3,7 +3,8 @@ import requests
 from pybit.unified_trading import HTTP
 from telegram import Update
 from datetime import datetime
-from aioflask import Flask, request 
+from flask import Flask, request
+from quart import Quart
 from telegram import Update
 import asyncio
 import os
@@ -78,7 +79,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ... (keep your existing imports and configurations)
 
-app = Flask(__name__)
+app = Quart(__name__)
 application = Application.builder().token(TOKEN).build()
 
 # ... (keep your existing command handlers and conversation logic)
