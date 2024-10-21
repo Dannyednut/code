@@ -85,7 +85,15 @@ application = Application.builder().token(TOKEN).build()
 # ... (keep your existing command handlers and conversation logic)
 
 async def setup_webhook():
-    await application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+    try:
+        webhook_info = await application.bot.get_webhook_info()
+        if webhook_info.url != f'https://{WEBHOOK}/{TOKEN}':
+            await application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+            print(f"Webhook set to https://{WEBHOOK}/{TOKEN}")
+        else:
+            print("Webhook is already set correctly")
+    except Exception as e:
+        print(f"Failed to set webhook: {e}")
 
 @app.route('/' + TOKEN, methods=['POST'])
 async def webhook():
