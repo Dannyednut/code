@@ -105,6 +105,10 @@ async def webhook():
 async def index():
     return 'Hello, this is my Telegram bot!'
 
+@app.route('/health')
+async def health_check():
+    return 'OK', 200
+
 def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("get_price", symbol)],
@@ -128,4 +132,5 @@ def main():
     return app
 
 if __name__ == '__main__':
-    main().run()
+    port = int(os.environ.get('PORT', 5000))
+    main().run(host='0.0.0.0', port=port)
