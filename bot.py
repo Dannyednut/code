@@ -3,8 +3,9 @@ import requests
 from pybit.unified_trading import HTTP
 from telegram import Update
 from datetime import datetime
-from flask import Flask, request 
+from aioflask import Flask, request 
 from telegram import Update
+import asyncio
 import os
 TOKEN = os.getenv('BOTAPIKEY')
 WEBHOOK = os.getenv('WEBHOOK')
@@ -75,16 +76,33 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
 
+# ... (keep your existing imports and configurations)
+
+app = Flask(__name__)
+application = Application.builder().token(TOKEN).build()
+
+# ... (keep your existing command handlers and conversation logic)
+
+async def setup_webhook():
+    await application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+
+@app.route('/' + TOKEN, methods=['POST'])
+async def webhook():
+    update = Update.de_json(await request.get_json(), application.bot)
+    await application.process_update(update)
+    return 'OK'
+
+@app.route('/')
+async def index():
+    return 'Hello, this is my Telegram bot!'
+
 def main():
-
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("get_price", symbol)
-            ],
-            states={
-                PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, price)]
-            },
-            fallbacks=[CommandHandler("cancel", cancel)],
-
+        entry_points=[CommandHandler("get_price", symbol)],
+        states={
+            PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, price)]
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
     weather_handler = CommandHandler('time', time)
     currency_handler = CommandHandler('trending', coins)
@@ -95,26 +113,11 @@ def main():
     application.add_handler(currency_handler)
     application.add_handler(start_handler)
 
-    application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+    # Set up the webhook
+    asyncio.run(setup_webhook())
 
     return app
 
-app = Flask(__name__)
-
-async def webhook(update, context):
-    await application.process_update(update)
-
-@app.route('/' + WEBHOOK + '/' + TOKEN, methods=['POST'])
-def respond():
-    update = Update.de_json(request.get_json(force=True), application.bot)
-    webhook(update, None)
-    return 'OK'
-
-@app.route('/')
-def index():
-    return 'Hello, this is my Telegram bot!'
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
-    main()
-    app.run(host='0.0.0.0', port=port)
+    main().run(host='0.0.0.0', port=port)
