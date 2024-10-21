@@ -8,6 +8,8 @@ from telegram import Update
 import os
 TOKEN = os.getenv('BOTAPIKEY')
 WEBHOOK = os.getenv('WEBHOOK')
+application = Application.builder().token(TOKEN).build()
+
 flag = True
 session = HTTP( 
     demo=True,
@@ -74,8 +76,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-    global application
-    application = Application.builder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("get_price", symbol)
