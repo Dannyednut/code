@@ -78,7 +78,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ... (keep your existing imports and configurations)
-
+Application.initialize()
 app = Quart(__name__)
 application = Application.builder().token(TOKEN).build()
 # ... (keep your existing command handlers and conversation logic)
