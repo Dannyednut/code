@@ -5,7 +5,9 @@ from telegram import Update
 from datetime import datetime
 from flask import Flask, request 
 from telegram import Update
-
+import os
+TOKEN = os.getenv('BOTAPIKEY')
+WEBHOOK = os.getenv('WEBHOOK')
 flag = True
 session = HTTP( 
     demo=True,
@@ -72,10 +74,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-    import os
-    global TOKEN
-    TOKEN = os.getenv('BOTAPIKEY')
-    WEBHOOK = os.getenv('WEBHOOK')
     global application
     application = Application.builder().token(TOKEN).build()
 
