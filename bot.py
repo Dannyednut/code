@@ -95,7 +95,7 @@ def main():
     application.add_handler(currency_handler)
     application.add_handler(start_handler)
 
-    application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+    application.bot.set_webhook(url=f'https://crest-jj18.onrender.com/{TOKEN}')
 
     return app
 
@@ -104,7 +104,7 @@ app = Flask(__name__)
 async def webhook(update, context):
     await application.process_update(update)
 
-@app.route('/' + WEBHOOK + '/' + TOKEN, methods=['POST'])
+@app.route('/' + TOKEN, methods=['POST'])
 def respond():
     update = Update.de_json(request.get_json(force=True), application.bot)
     webhook(update, None)
