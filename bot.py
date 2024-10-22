@@ -107,7 +107,6 @@ def main():
 
     return application
 
-application = main()
 async def setup_webhook():
     try:
         webhook_info = await application.bot.get_webhook_info()
@@ -135,7 +134,6 @@ async def health_check():
 
 @app.route('/' + TOKEN, methods=['POST'])
 async def webhook():
-    application = main()
     update = Update.de_json(await request.get_json(), application.bot)
     await application.process_update(update)
     return 'OK'
