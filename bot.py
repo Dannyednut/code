@@ -125,12 +125,13 @@ def main():
     # Set up the webhook
     asyncio.run(setup_webhook(application))
 
-    return app, application
+    return application
 
-app, application = main()
+application = main()
 
 @app.route('/' + TOKEN, methods=['POST'])
 async def webhook():
+    application = main()
     update = Update.de_json(await request.get_json(), application.bot)
     await application.process_update(update)
     return 'OK'
