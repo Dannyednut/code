@@ -78,12 +78,11 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ... (keep your existing imports and configurations)
-Application.initialize()
 app = Quart(__name__)
-application = Application.builder().token(TOKEN).build()
+
 # ... (keep your existing command handlers and conversation logic)
 
-async def setup_webhook():
+async def setup_webhook(application):
     try:
         webhook_info = await application.bot.get_webhook_info()
         if webhook_info.url != f'https://{WEBHOOK}/{TOKEN}':
@@ -120,8 +119,11 @@ def main():
     application.add_handler(currency_handler)
     application.add_handler(start_handler)
 
+    # Initialize the application
+    application.initialize()
+
     # Set up the webhook
-    asyncio.run(setup_webhook())
+    asyncio.run(setup_webhook(application))
 
     return app, application
 
