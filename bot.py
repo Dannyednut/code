@@ -102,9 +102,6 @@ def main():
     application.add_handler(currency_handler)
     application.add_handler(start_handler)
 
-    # Initialize the application
-    application.initialize()
-
     return application
 
 async def setup_webhook():
@@ -122,6 +119,7 @@ async def setup_webhook():
 async def startup():
     global application
     application = main()  # Call main() to set up the application
+    await application.initialize()
     await setup_webhook()
 
 @app.route('/')
