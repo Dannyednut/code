@@ -79,29 +79,12 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ... (keep your existing imports and configurations)
 app = Quart(__name__)
-
+application = None
 # ... (keep your existing command handlers and conversation logic)
 
-async def setup_webhook(application):
-    try:
-        webhook_info = await application.bot.get_webhook_info()
-        if webhook_info.url != f'https://{WEBHOOK}/{TOKEN}':
-            await application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
-            print(f"Webhook set to https://{WEBHOOK}/{TOKEN}")
-        else:
-            print("Webhook is already set correctly")
-    except Exception as e:
-        print(f"Failed to set webhook: {e}")
-
-@app.route('/')
-async def index():
-    return 'Hello, this is my Telegram bot!'
-
-@app.route('/health')
-async def health_check():
-    return 'OK', 200
 
 def main():
+    global application
     application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("get_price", symbol)],
@@ -122,12 +105,33 @@ def main():
     # Initialize the application
     application.initialize()
 
-    # Set up the webhook
-    asyncio.run(setup_webhook(application))
-
     return application
 
 application = main()
+async def setup_webhook():
+    try:
+        webhook_info = await application.bot.get_webhook_info()
+        if webhook_info.url != f'https://{WEBHOOK}/{TOKEN}':
+            await application.bot.set_webhook(url=f'https://{WEBHOOK}/{TOKEN}')
+            print(f"Webhook set to https://{WEBHOOK}/{TOKEN}")
+        else:
+            print("Webhook is already set correctly")
+    except Exception as e:
+        print(f"Failed to set webhook: {e}")
+
+@app.before_serving
+async def startup():
+    global application
+    application = main()  # Call main() to set up the application
+    await setup_webhook()
+
+@app.route('/')
+async def index():
+    return 'Hello, this is my Telegram bot!'
+
+@app.route('/health')
+async def health_check():
+    return 'OK', 200
 
 @app.route('/' + TOKEN, methods=['POST'])
 async def webhook():
