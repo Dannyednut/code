@@ -39,6 +39,7 @@ def return_time():
 
 def get_price(symbol: str):
     try:
+        print('getting price')
         return session.get_tickers(category='spot', symbol=symbol)['result']['list'][0]['lastPrice']
     except Exception:
          return None
