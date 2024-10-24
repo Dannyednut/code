@@ -26,16 +26,41 @@ data = requests.get(url) # requests data from API
 data = data.json() # converts return data to json
 '''
 # Retrieve values from API
-try:
-    btc_rate = session.get_tickers(category='spot', symbol='BTCUSDT')['result']['list'][0]['lastPrice']
-    eth_rate = session.get_tickers(category='spot', symbol='ETHUSDT')['result']['list'][0]['lastPrice']
-    ton_rate = session.get_tickers(category='spot', symbol='TONUSDT')['result']['list'][0]['lastPrice']
-except Exception:
-     flag = False
+def trend():
+    try:
+        # Get the tickers for all symbols
+        li = {}
+        string =''
+        symbol_width = 12
+        price_width = 15
+        change_width = 2
+        tickers = session.get_tickers(category="spot").get('result')['list']
+        # Filter the tickers to get the gainer pairs
+        gainer_pairs = [ticker['symbol'] for ticker in tickers if float(ticker['price24hPcnt']) > 0 and ticker['symbol'][-4:] == ('USDT' or 'USDC')]
+        for i in gainer_pairs:
+            for n in tickers:
+                if i in n['symbol']:
+                    li[n['symbol']] = (float(n['price24hPcnt']))
+        # Print the gainer pairs
+        top_five_keys = [item[0] for item in sorted(li.items(), key=lambda item: item[1], reverse=True)[:5]]
+        # Add a header for clarity
+        string += f"{'Symbol':<{symbol_width}} {'Last Price':<{price_width}} {'24h Change':<{change_width}}\n"
+        string += "-" * (symbol_width + price_width + change_width) + "\n"
+
+        for i in top_five_keys:
+            pair = session.get_tickers(category="spot", symbol=i).get('result')['list'][0]
+            # Format the output with specified widths
+            string += f"{pair['symbol']:<{symbol_width}} {pair['lastPrice']:<{price_width}} {round(float(pair['price24hPcnt']) * 100, 2):<{change_width}}%\n"
+
+        return string
+
+    except Exception:
+        flag = False
+        return flag
 
 PRICE = range(1)
 def return_time():
-    return f'Hello. The current time is: {datetime.now().time()}.'
+    return f'Hello. The current time is: {datetime.now().strftime("%H:%M")} UTC.'
 
 def get_price(symbol: str):
     try:
@@ -45,8 +70,7 @@ def get_price(symbol: str):
          return None
 
 def return_rates():
-    return 'Hello. Today, USDT quote prices are as follows:\n BTCUSDT = $'+str(btc_rate)+'\n ETHUSDT = $'+str(eth_rate)+'\n TONUSDT = $'+str(ton_rate)
-
+    return trend()
 async def time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=return_time())
 
